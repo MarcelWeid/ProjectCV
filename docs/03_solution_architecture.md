@@ -28,7 +28,7 @@ Ranked by influence on the design:
 | Concern | Choice |
 |---|---|
 | Hosting | Hetzner Cloud (single VM) + Hetzner Managed Postgres |
-| Backend | ASP.NET Core (.NET 9) Web API |
+| Backend | ASP.NET Core (.NET 10, LTS — DEC-005) Web API |
 | Frontend | Static site, vanilla TypeScript + Vite, no SPA framework |
 | Vector store | Postgres + `pgvector` extension on Hetzner Managed Postgres |
 | Keyword search | Postgres full-text search (`tsvector` / `tsquery`) on the same table |

@@ -181,3 +181,32 @@ Jeder Eintrag wird beim Committen mit der zugehörigen Arbeit zusammen festgehal
 - R8 (Candidate Corpus) — weiterhin null Zeilen. Vierter Tag. Wird *jetzt* ernst.
 - R10 (self-hosted DB Operational Burden) — neu aufgenommen, Backup-Strategie ist Phase-5-Deliverable.
 - R6 (Scope Creep) — heute neutral, sauber im WBS-Scope.
+
+---
+
+## 2026-05-13 (Mi, 5. Block ~30 min) — TASK-007: Dev-Env vervollständigt
+
+**Worked on:** TASK-007 (lokale Dev-Env), Versionsabgleich .NET.
+
+**Done:**
+- .NET 10 SDK (10.0.104) war bereits installiert — Versionswahl bewusst getroffen (LTS, DEC-005).
+- `dotnet ef` Global Tool 10.0.8 installiert.
+- `psql` Client 16.13 installiert (Ubuntu apt).
+- End-to-End-Test: kleines C#-Programm mit Npgsql verbindet sich zur lokalen Docker-Postgres, liest Postgres-Version (17.9) und pgvector-Version (0.8.2). Test-Programm anschließend gelöscht.
+
+**Stuck on:** —
+
+**Next session:**
+- TASK-010 (kleine Decisions: D5 UI-Ton, Th2 Output-Filter, L1 Impressum, L4 Pilot-Companies).
+- Oder R8 (Candidate Corpus — fünfter Tag offen, wird langsam wirklich ernst).
+- Nach TASK-010 ist Phase 0 zu 100% durch und Phase 1 (RAG-Core) kann starten.
+
+**Decisions made:** DEC-005 (.NET 10 statt 9).
+
+**Notes:**
+- psql 16 redet problemlos mit Server 17 — Warnung über Major-Version-Diff ist erwartet, betrifft nur exotische Features.
+- Lokales Passwort enthält URL-unfreundliches Zeichen — URL-Connection-String funktioniert nicht, getrennte Parameter (Host/User/Password als Env-Vars) funktionieren. Für Production-DB (Phase 5) Passwort URL-safe generieren (z.B. `openssl rand -hex 32`).
+
+**Risk watch:**
+- R8 (Candidate Corpus) — Tag 5 offen. Empfehlung an mich selbst: morgen unbedingt anfangen, auch wenn nur eine Projektbeschreibung.
+- Sonst keine neuen Risiken.

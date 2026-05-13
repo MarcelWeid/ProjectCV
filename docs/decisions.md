@@ -159,3 +159,30 @@ Format: each entry has a stable ID (`DEC-NNN`, never reused), the decision itsel
 - Named volume `projectcv-db-data` for persistence across `docker compose down`.
 - Init script `001-extension.sql` runs `CREATE EXTENSION vector` on first start; idempotent (`IF NOT EXISTS`).
 - Connection string for app config: `Host=localhost;Port=5432;Database=projectcv;Username=projectcv;Password=<from .env>;SslMode=Disable` for local; production will use SSL on the VM.
+
+---
+
+## DEC-005 — .NET 10 statt .NET 9 (2026-05-13)
+
+**Decision:** .NET 10 SDK (LTS) als Entwicklungs- und Runtime-Plattform, statt der ursprünglich in 03_solution_architecture.md geplanten .NET 9.
+
+**Why:**
+- .NET 9 war STS (Standard Term Support); Support läuft Mai 2026 aus — genau jetzt.
+- .NET 10 ist LTS (3 Jahre Support, bis Nov 2028) und seit Nov 2025 GA.
+- Für ein Projekt mit 4-6 Monaten aktiver Entwicklung + Pflege ist LTS klar besser.
+- Plan-Edit minimal: nur Versionsangabe in Architektur/WBS anpassen, keine konzeptionelle Änderung.
+- SDK war bereits auf der WSL-Dev-Maschine installiert (10.0.104) — keine Installation nötig.
+
+**Considered:** .NET 9 wie geplant — verworfen wegen auslaufendem Support.
+
+**Reversibility:** Hoch — Wechsel auf 9 oder zurück auf 10 wäre eine Target-Framework-Änderung in den `.csproj`-Dateien. Bei Phase-1-Start noch kein Aufwand; später ein Build-Test.
+
+**Effects on plan:**
+- 03_solution_architecture.md §0.2 (Stack at a glance): "ASP.NET Core (.NET 9)" → ".NET 10".
+- 07_work_breakdown.md TASK-007 angepasst.
+- Kein Einfluss auf Architektur-Designentscheidungen, Kostenmodell, Threat Model.
+
+**Notes:**
+- Installiert via Standardpaketquelle in WSL (Ubuntu 24.04).
+- `dotnet ef` Global Tool: Version 10.0.8.
+- End-to-End-Verifikation: .NET 10 → Npgsql → Docker-Postgres 17 → pgvector 0.8.2 erfolgreich.
