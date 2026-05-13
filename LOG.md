@@ -13,7 +13,7 @@ Jeder Eintrag wird beim Committen mit der zugehörigen Arbeit zusammen festgehal
 
 ---
 
-## 2026-05-12 (Mi, 120 min) — erste Session
+## 2026-05-12 (Di, 120 min) — erste Session
 
 **Worked on:**
 - Plansession-Nachgang: TASK-001 (Naming-Entscheidung) abgeschlossen
@@ -54,3 +54,34 @@ Jeder Eintrag wird beim Committen mit der zugehörigen Arbeit zusammen festgehal
 **Risk watch:**
 - R8 (Candidate Corpus) — heute keine Zeile geschrieben. Ab morgen: eine Projektbeschreibung pro Abend, parallel zur Tech-Arbeit. Sonst blockt es Phase 1.
 - R6 (Scope Creep / Never-Ships) — heute eher gegenteilig: vorgezogen statt verzögert. Solange das kein neues *zusätzliches* Scope schafft, ist es harmlos.
+
+---
+
+## 2026-05-13 (Mi, 2. Block ~75 min) — Cluster A: Repo aufsetzen
+
+**Worked on:** TASK-003 (Repo + README + LICENSE), TASK-008 (Pre-commit-Hooks, Secret-Scanner), TASK-009 (Verzeichnisstruktur).
+
+**Done:**
+- GitHub-Repo `github.com/MarcelWeid/ProjectCV` public, MIT-lizenziert.
+- Verzeichnisstruktur angelegt: `src/`, `docs/`, `config/`, `companies/`, `tests/`, `infra/`, jeweils mit README zur Orientierung.
+- Root-Dotfiles: `.gitignore`, `.editorconfig`, `.gitattributes`, `.pre-commit-config.yaml`, `.env.example`.
+- GitHub Actions Workflow für Gitleaks-Secret-Scan auf Push und PR.
+- Alle 8 Planungsdokumente plus `decisions.md` und `LOG.md` in `docs/`.
+
+**Stuck on:** —
+
+**Next session:**
+- TASK-005 (Hetzner Managed Postgres mit pgvector) — würde Phase-1-Vorbereitung abschließen.
+- Oder TASK-007 (lokale Dev-Env) — wenn Lust auf Tooling.
+- Oder eine R8-Session (Candidate Corpus anfangen).
+
+**Decisions made:** —
+
+**Notes:**
+- Beim ersten Commit fünf Dot-Files versehentlich in `docs/` mit-kopiert. Beim zweiten Commit (`git status` aufmerksam gelesen) gefangen, sauber gefixt. Plus `LICENSE.txt` → `LICENSE` für GitHub-Lizenzerkennung. Plus Zeilenenden auf LF normalisiert.
+- Lernpunkt: `git status` ist die Pflicht-Lektüre vor `git commit`. `git add .` ohne Review ist eine Falle.
+- Repo ist public-from-day-1, was die ehrliche Showcase-Position ist. Erster Recruiter-Link ist noch Wochen weg; die unvermeidlichen kleinen Holprigkeiten im frühen Verlauf sind okay und sogar authentisch.
+
+**Risk watch:**
+- R8 (Candidate Corpus) — weiterhin null Zeilen geschrieben. Stand 3. Tag in Folge. Wird langsam ernst.
+- R6 (Scope Creep) — heute neutral; sauber im WBS-Scope geblieben.
