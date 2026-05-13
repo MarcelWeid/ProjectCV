@@ -70,3 +70,92 @@ Format: each entry has a stable ID (`DEC-NNN`, never reused), the decision itsel
 - WBS TASK-502: noch offen für Phase 5 (Ansible-Skript für Reproduzierbarkeit, nicht für akute Härtung)
 - WBS TASK-002 (DNS A-Record): bleibt für Phase 5
 - Phase 5 ist netto ~3h leichter
+
+---
+
+## DEC-003 — Azure-OpenAI-Setup unter Firmen-VS-Subscription (2026-05-13)
+
+**Decision:**
+
+- **Azure-Subscription:** Visual-Studio-Subscription über Firmen-Account (`marcel.weidemann@agilent.com`).
+- **Tenant:** Firmen-Tenant.
+- **Resource Group:** `marcel-private-projectcv-rg` mit eindeutigen Tags (owner, project, purpose) — signalisiert Privatcharakter.
+- **Region:** West Europe.
+- **Deployments:**
+  - `gpt-4o`, Version 2024-11-20, Deployment-Type **Data Zone Standard (EUR)**, 300K TPM / 1.8K RPM, Auto-Upgrade aktiv.
+  - `text-embedding-3-large`, Version 1, Deployment-Type **Standard**, 350K TPM / 2.1K RPM, kein Auto-Upgrade.
+- **Modellwahl bestätigt ADR-002:** weiterhin GPT-4o end-to-end mit text-embedding-3-large.
+
+**Why diese Subscription-Wahl:**
+
+- Anstellungsvertrag erlaubt karrierebezogene Side-Projects ausdrücklich.
+- VS-Subscription-Guthaben darf privat genutzt werden.
+- Kontinuität nach möglichem Jobwechsel ist nicht kritisch — der Bot darf mit dem Account-Ende verschwinden.
+- Hetzner (DB, Server, Recruiter-Daten) liegt komplett privat — die *datenverarbeitende* Hälfte ist sauber privat. Azure liefert nur LLM-Inferenz, ohne Inhalte zu persistieren.
+- Tags und dedizierte Resource Group machen den Privatcharakter im Firmen-Tenant unmissverständlich sichtbar.
+
+**Why GPT-4o trotz GPT-5-Familie verfügbar:**
+
+- ADR-002 ist gut durchdacht; ein Wechsel würde Tuning-Aufwand und Re-Eval erfordern, ohne dass klare Vorteile dokumentiert sind.
+- Sichere Wahl mit bekannten Charakteristiken (Function-Calling, Latenz, Kosten).
+- Kostenmodell aus 03_solution_architecture.md §6.5 bleibt unverändert gültig.
+- Upgrade auf neuere Modelle (gpt-4.1, gpt-5-mini, gpt-5.1) bleibt für v1.1+ offen — NFR-031 garantiert Config-only-Switch ohne Code-Änderung.
+
+**Why "Data Zone Standard (EUR)" statt "Standard":**
+
+- Reines "Standard" (regional, einzelne Region) wird von Azure für gpt-4o aktuell nicht angeboten — nur "Data Zone Standard" oder "Global Standard".
+- "Data Zone Standard (EUR)" hält Daten innerhalb der EU-Datenzone → GDPR / CR-013 (Datenresidenz) gewahrt.
+- "Global Standard" wäre für unsere Compliance-Anforderung nicht akzeptabel.
+- Embedding-Modell konnte als reines "Standard" deployed werden — keine Anpassung nötig.
+
+**Considered:**
+
+- Privates Microsoft-Konto + neue Pay-as-you-go-Subscription anlegen — verworfen, weil VS-Guthaben da ist und Vertrag privaten Side-Project-Einsatz erlaubt. Bei Guthaben-Ende oder Vertrags-/Firmenwechsel re-evaluieren.
+- gpt-4o-mini statt gpt-4o — verworfen für MVP, weil ADR-002 bewusste Qualitätswahl ist; Wechsel via Config möglich falls Eval später anders entscheidet.
+- gpt-5-Familie — verworfen für MVP wegen unklarer Daten und Tuning-Aufwand; Backlog-Eintrag für v1.1+.
+
+**Reversibility:**
+
+- Modellwahl: hoch (Config-Wechsel, NFR-031).
+- Subscription-Wechsel: moderat (Tenant-Wechsel würde neue Resource + neue Keys + Re-Deployment bedeuten).
+- Deployment-Type: niedrig (Azure-Restriktion).
+
+**Effects on plan:**
+
+- WBS TASK-006 (Azure-OpenAI-Quota): done in einer Session statt 1-10 Werktage Wartezeit.
+- Phase 0 deutlich verkürzt.
+- 03_solution_architecture.md §6.5 Kostenmodell bleibt unverändert gültig.
+- 06_legal_compliance.md §1.2: Azure-Processor-Eintrag stimmt; EU-Region und Training-Opt-out via Standard-Konfiguration gegeben.
+- **Neues Risiko R9 (Modell-Retirement Okt 2026)** → siehe WBS-Update; Migrations-Session Sommer 2026 vormerken.
+
+**Notes:**
+
+- Erste Resource-Erstellung landete versehentlich ohne dedizierte Resource Group / Tags — bemerkt, gelöscht, neu mit Tagging-Konvention angelegt.
+- Modell-Retirement Oktober 2026 für gpt-4o: nicht akut (MVP wird vorher fertig), aber Migration für Sommer 2026 als R9 vorgemerkt.
+- Embedding-Retirement April 2027: deutlich entspannter, Embedding-Wechsel würde Re-Indexierung erzwingen.
+---
+
+## DEC-004 — Postgres + pgvector self-hosted via Docker (2026-05-13)
+
+**Decision:** Replace planned Hetzner Managed Postgres with self-hosted Postgres 17 + pgvector 0.8.2 running in Docker via Compose. Local dev instance runs in WSL; production instance will be deployed to the Hetzner VM in Phase 5 using the same Compose file with different environment variables.
+
+**Why:** Hetzner Managed Postgres does not offer pgvector in a form usable for this project. Self-hosting via the official `pgvector/pgvector:pg17` image is the lowest-friction replacement that preserves all design properties of ADR-001 (hybrid retrieval in one table, EF Core compatibility, known tooling).
+
+**Considered alternatives:** see ADR-001 (revised).
+
+**Reversibility:** High at MVP stage. Schema, queries, and EF Core mappings remain compatible across any Postgres + pgvector deployment. Migration to a managed alternative later would be straightforward if the market evolves.
+
+**Effects on plan:**
+
+- Verifies pgvector 0.8.2 working locally with cosine and L2 distance operators (TASK-005b).
+- TASK-005 effectively split: local-dev part done (this session); VM deployment moves to Phase 5 alongside TASK-503.
+- ADR-001 revised in `03_solution_architecture.md`.
+- **New risk R10 (self-hosted DB operational burden)** added to `07_work_breakdown.md` §10.
+- 06_legal_compliance.md §1.2: Hetzner remains data processor (VM-level only); the database is now operated by the controller directly, but the underlying compute is still Hetzner — DSGVO roles unchanged in substance.
+
+**Notes:**
+
+- Container running locally in WSL via Docker Engine (no Docker Desktop). Bind to `127.0.0.1:5432` only — not exposed to other network interfaces.
+- Named volume `projectcv-db-data` for persistence across `docker compose down`.
+- Init script `001-extension.sql` runs `CREATE EXTENSION vector` on first start; idempotent (`IF NOT EXISTS`).
+- Connection string for app config: `Host=localhost;Port=5432;Database=projectcv;Username=projectcv;Password=<from .env>;SslMode=Disable` for local; production will use SSL on the VM.

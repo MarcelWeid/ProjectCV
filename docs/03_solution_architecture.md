@@ -505,13 +505,24 @@ Slightly above the €30 informal target in NFR-022; well under the €100 hard 
 
 Each ADR is short and answers: *what, why, alternatives considered, status.* Full ADRs as separate files in `docs/adr/` in the repo; summaries here.
 
-### ADR-001 — Hetzner managed Postgres for both pgvector and FTS
+### ADR-001 — Self-hosted Postgres + pgvector via Docker Compose
 
-**Decision:** Use one Hetzner Managed Postgres with `pgvector` for embeddings and built-in `tsvector` for keyword search. One database for everything.
+**Status:** Revised 2026-05-13. Original decision (Hetzner Managed Postgres) was based on the assumption that Hetzner's managed offering supported pgvector. Verification during execution showed that the managed service does not meet our pgvector requirements. Replaced with a self-hosted equivalent.
 
-**Why:** Operational simplicity for a one-person project. pgvector is mature, well-supported, and good enough at this scale. FTS in the same row as the vector means hybrid retrieval is a single table — no consistency problems, no cross-store joins.
+**Decision:** Use Postgres 17 with the pgvector extension, running in a Docker container via Docker Compose. Single database for vector embeddings, full-text search, and operational tables.
 
-**Alternatives:** Qdrant or Weaviate as a dedicated vector DB (more bells and whistles, more ops). Self-hosted Postgres on the VM (no managed backups, more to break). Elasticsearch for keyword search (overkill).
+**Why:** Operational simplicity for a one-person project remains the goal. pgvector is mature and well-supported as an extension. FTS (`tsvector`) lives in the same row as the vector embedding, so hybrid retrieval is one query against one table — no consistency issues across stores. The official `pgvector/pgvector` image ships with the extension pre-installed; no custom Dockerfile needed.
+
+**Alternatives considered (during revision):**
+- Qdrant + separate Postgres for metadata — rejected: two stores, two backups, more ops, breaks the single-table-hybrid model.
+- Weaviate — rejected: less familiar tooling, ressource-hungrier, would still need a second store for operational tables.
+- SQLite + sqlite-vec — rejected: less mature than pgvector, single-writer limitation, lower showcase value.
+- Stay with Hetzner Managed Postgres (without pgvector) and use a different vector solution — rejected for the same hybrid-retrieval reason.
+
+**Trade-offs accepted:**
+- We now own backups, updates, monitoring, and disk-level data integrity of the database. This was Hetzner's job in the original ADR. Backup strategy (`pg_dumpall` cron + off-site copy) becomes a Phase 5 runbook item.
+- DB lives on the same VM as the API container, so VM-level outages take both down together. For a portfolio site with 99% SLA, acceptable.
+- Disk capacity is bounded by the VM (CX22: 40 GB). Our corpus is small (~300 MB max), so headroom is large; documented as a non-issue.
 
 **Status:** Accepted.
 
