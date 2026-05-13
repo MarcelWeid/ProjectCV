@@ -1,0 +1,47 @@
+company_id: TBD-uuid
+display_name: Exxeta
+domain: exxeta.com
+
+seeds:
+  - https://exxeta.com/                                    # Startseite
+  - https://exxeta.com/karriere                            # Karriere
+  - https://exxeta.com/news                                # News / Blog
+  - https://exxeta.com/about                               # About
+  # Weitere Seeds vor Scrape ergänzen
+
+crawl:
+  same_origin_only: true
+  max_depth: 2
+  max_pages: 50
+  allow_paths:
+    - /karriere
+    - /news
+    - /about
+    - /services                      # falls vorhanden, technisch interessant
+  deny_paths:
+    - /portal                        # Auth-gebunden falls vorhanden
+    - /kundenportal
+
+robots:
+  respect: true
+  user_agent: "ProjectCVBot/1.0 (+https://marcel.weidemann.family/cv)"
+
+legal_review:
+  reviewed_at: TBD
+  reviewer: TBD
+  source_classification: TBD         # "public marketing content"
+  robots_txt_checked: false
+  robots_txt_allows_target_paths: TBD
+  tos_url: TBD
+  tos_explicitly_prohibits_scraping: TBD
+  tos_explicitly_prohibits_ai_training: TBD
+  tdm_opt_out_machine_readable: TBD
+  copyright_concerns:
+    level: TBD
+    notes: TBD
+  pii_in_content:
+    level: TBD
+    notes: TBD
+  trademark_concerns:
+    notes: TBD
+  decision: TBD

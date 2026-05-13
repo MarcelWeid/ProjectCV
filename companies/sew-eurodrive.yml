@@ -1,0 +1,46 @@
+company_id: TBD-uuid                  # Wird via TokenAdmin-CLI generiert (Phase 1)
+display_name: SEW-Eurodrive
+domain: sew-eurodrive.de
+
+seeds:
+  - https://www.sew-eurodrive.de/unternehmen/                  # About
+  - https://www.sew-eurodrive.de/karriere/                     # Karriere
+  - https://www.sew-eurodrive.de/news-und-presse/              # Press / News
+  # Weitere Seeds vor Scrape ergänzen nach robots.txt-Check
+
+crawl:
+  same_origin_only: true
+  max_depth: 2
+  max_pages: 50
+  allow_paths:
+    - /unternehmen
+    - /karriere
+    - /news-und-presse
+  deny_paths:
+    - /shop                          # falls vorhanden
+    - /kundenportal                  # Auth-gebundene Bereiche
+    - /support                       # falls auf User-Auth ausgelegt
+
+robots:
+  respect: true                      # Pflicht (CR-020)
+  user_agent: "ProjectCVBot/1.0 (+https://marcel.weidemann.family/cv)"
+
+legal_review:
+  reviewed_at: TBD                   # ISO-Datum bei Review-Abschluss
+  reviewer: TBD
+  source_classification: TBD         # z.B. "public marketing content"
+  robots_txt_checked: false
+  robots_txt_allows_target_paths: TBD
+  tos_url: TBD
+  tos_explicitly_prohibits_scraping: TBD
+  tos_explicitly_prohibits_ai_training: TBD
+  tdm_opt_out_machine_readable: TBD
+  copyright_concerns:
+    level: TBD
+    notes: TBD
+  pii_in_content:
+    level: TBD
+    notes: TBD
+  trademark_concerns:
+    notes: TBD
+  decision: TBD                      # "proceed" | "proceed with reduced scope" | "do not scrape"

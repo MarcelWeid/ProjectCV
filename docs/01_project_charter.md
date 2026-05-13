@@ -115,7 +115,7 @@ The plan assumes evening/weekend work. Adjust elastically.
 | D2 | Domain name | You | Before phase 5 |
 | D3 | Exact list of pilot companies (3) and full set (~20) | You | Before phase 1 / phase 6 |
 | D4 | LLM model tier (GPT-4o vs. GPT-4o-mini for cost) | You + me | During phase 2 |
-| D5 | UI tone — formal, playful, terminal-aesthetic? | You | Before phase 3 |
+| D5 | ~~UI tone~~ **Resolved 2026-05-13 in DEC-006.** Leicht persönlich-sachlich (Variante 2), Hauptsprache Deutsch, Anrede spiegelt Recruiter (Sie/Du). | Done | Done |
 
 ---
 

@@ -186,3 +186,224 @@ Format: each entry has a stable ID (`DEC-NNN`, never reused), the decision itsel
 - Installiert via Standardpaketquelle in WSL (Ubuntu 24.04).
 - `dotnet ef` Global Tool: Version 10.0.8.
 - End-to-End-Verifikation: .NET 10 → Npgsql → Docker-Postgres 17 → pgvector 0.8.2 erfolgreich.
+
+---
+
+## DEC-006 — Bot-Tonalität, Sprache und Anrede (2026-05-13)
+
+**Decision:**
+
+- **Ton:** "Leicht persönlich, sachlich." Der Bot spricht *über* Marcel mit der Wärme eines Kollegen, der ihn gut kennt — sachorientiert, nicht kumpelig, nicht steril. Erlaubt sind kleine Wertungen ("das war die richtige Entscheidung") und Bezugnahmen aufs Unternehmen, wenn die Quelle es trägt. Verboten bleibt Schönfärben oder Überschwang.
+- **Hauptsprache:** Deutsch. Deutsche Recruiter sind Hauptzielgruppe.
+- **Sprachwechsel:** Der Bot antwortet in der Sprache der jeweils letzten Recruiter-Nachricht. Englisch funktioniert vollwertig (FR-011). Sprachwechsel mitten in der Konversation wird übernommen.
+- **Anrede im Deutschen:** Default ist "Du". Bot beginnt jede Konversation mit "Du". Sobald der Recruiter erstmals siezt (ein einziges "Sie", "Ihnen", "Ihre" o.Ä. genügt), wechselt der Bot ab der nächsten Antwort auf "Sie" und bleibt dort für den Rest der Konversation. Einzelne lockere "du"-Floskeln nach dem Wechsel triggern keinen Rückwärts-Wechsel — Du→Sie ist einseitig.
+
+**Why:**
+
+- Variante 2 (sachlich-persönlich) trifft den Sweet Spot zwischen "kalt" (Variante 1) und "zu meinungsstark" (Variante 3). Hat Wärme, ohne Persönlichkeit zu erfinden.
+- Deutsch als Default reflektiert den Markt, den Marcel wirklich anspricht.
+- Anrede-Spiegelung passt zur Variante-2-Logik ("guter Kollege") und vermeidet sowohl "zu distanziert für ein Tech-Startup" als auch "zu kumpelig für einen Konzern-Recruiter".
+- Du-Default reflektiert die wahrscheinlichste Zielgruppe (Tech-Recruiter, Startup-Kontext). Recruiter, die siezen würden, signalisieren das schnell durch ihre erste Antwort — und der Bot wechselt dann hoch. Konservativ wäre Sie-Default, wirkt aber bei Tech-Audiences leicht steif.
+- Einseitiger Wechsel (Du → Sie, nicht zurück): vermeidet wechselhaftes Verhalten, das den Bot inkonsistent wirken ließe. Wenn ein Recruiter zwischendurch ein "du" einstreut, war das nicht zwingend ein Register-Wechsel.
+- Du-Default reflektiert die wahrscheinlichste Zielgruppe (Tech-Recruiter, Startup-Kontext). Recruiter, die siezen würden, signalisieren das durch ihre erste Antwort — und der Bot wechselt dann hoch. Konservativ wäre Sie-Default, wirkt aber bei Tech-Audiences leicht steif.
+- Asymmetrische Switch-Sensibilität (ein "Sie" genügt; ein einzelnes "du" nicht zurück): deutsche Sprecher siezen selten versehentlich, ein "Sie" ist absichtlich. Ein eingestreutes "du" kann dagegen aus einer Floskel kommen ("kannst du mir nochmal X erklären") und ist kein klares Register-Signal.
+
+**Considered:**
+
+- Variante 1 (formal-professionell) — verworfen als zu kalt; lässt Marcel "abgehoben" wirken.
+- Variante 3 (subtile Persönlichkeit) — verworfen, weil der Bot zu sehr eigene Stimme bekommt; Gefahr, dass Recruiter sich auf den Bot beziehen statt auf Marcel.
+- Englisch als Hauptsprache — verworfen, weil Hauptzielgruppe deutschsprachig ist; Englisch ist eingebaut, nicht hauptsächlich.
+- Festes "Sie" oder festes "Du" — verworfen, weil Tech-/Konzern-Recruiter unterschiedliche Erwartungen mitbringen.
+
+**Reversibility:** Hoch. Alle drei Aspekte sind im Systemprompt konfigurierbar; ein Anredewechsel ist ein Prompt-Edit, keine Code-Änderung (NFR-031).
+
+**Effects on plan:**
+
+- **Phase 2 Systemprompt (TASK-205)** muss umsetzen:
+  - Bot-Eröffnung mit "Du" als Default.
+  - Erkennen, wenn die letzte Recruiter-Nachricht ein "Sie"-Pronomen oder eine "Sie"-konjugierte Verbform enthält → ab nächster Antwort siezen.
+  - Sobald einmal gesiezt: Bot bleibt beim Sie, auch wenn folgende Recruiter-Nachrichten "du"-Formen enthalten.
+  - Bei englischen Recruiter-Nachrichten ist die Anrede-Frage moot — Englisch hat nur "you".
+- **Phase 3 Frontend-Copy (TASK-302, TASK-303)** sollte zur Tonalität passen — Hero-Text, Placeholder, Disclosure-Banner.
+- **Test-Strategie:** Eval-Set sollte Tonalitäts-Prüfung enthalten (manuelle Stichprobe nach §6.1 von 08_test_strategy.md — "war die Antwort im erwarteten Ton?").
+- **Red-Team:** keine direkte Auswirkung; Refusal-Texte werden in Phase 2 entsprechend formuliert (FR-014).
+
+**Notes:**
+
+- Bot-Eigenbezug: "Marcels CV-Assistent" (gemäß DEC-001), nicht "Marcel selbst". Wichtig wegen der Spiegelungs-Logik: der Bot ist ein Kollege Marcels, kein Marcel-Impersonator.
+- Refusal-Sprache nach FR-014 in Variante-2-Stil: "Da müsste ich passen — das ist in meinen Quellen nicht vermerkt. Marcel kann das aus erster Hand besser beantworten." (Mit Sie/Du je nach Recruiter-Anrede.)
+
+---
+
+## DEC-007 — Impressum-Angaben (2026-05-13)
+
+**Decision:**
+
+- **Adresse:** Eigene Wohnanschrift (vollständig: Straße, Hausnummer, PLZ, Ort).
+- **Kontakt:** Eigene Mobilnummer und eine erreichbare E-Mail-Adresse.
+- **Beide Angaben sind ladungsfähig und §5-DDG-konform.**
+
+**Why:**
+
+- Wohnanschrift ist die pragmatische Wahl: rechtlich völlig unproblematisch, kostenlos, keine Drittabhängigkeit. Risiko (Stalking, ungewollte Post, Datenbroker-Indexierung) als gering eingeschätzt für die Zielgruppe (Recruiter).
+- Mobilnummer wurde ergänzt, nachdem klargestellt wurde: §5 Abs. 1 Nr. 2 DDG plus EuGH-Rechtsprechung (C-298/07) fordern neben E-Mail noch einen zweiten unmittelbaren Kommunikationskanal. Nur-E-Mail wäre eine bekannte Abmahn-Schwachstelle in DE.
+
+**Considered:**
+
+- C/o-Adresse bei vertrauter Person → verworfen, weil keine geeignete dritte Person verfügbar/gewollt.
+- Kommerzieller Impressums-Service → verworfen wegen monatlicher Kosten und "Warum braucht der das"-Anmutung bei einem Solo-Karriereprojekt.
+- Nur-E-Mail im Impressum → verworfen wegen aktiver Abmahnrisiken in DE.
+- Separate Bewerbungs-Telefonnummer (z.B. sipgate basic) → verworfen zugunsten der einfacheren Lösung mit der echten Mobilnummer; bewusste Akzeptanz von etwas Spam-Risiko.
+- Kontaktformular mit 24h-Antwortzusage → verworfen, weil zusätzlicher Implementierungsaufwand und Mailbox-Pflicht.
+
+**Trade-offs accepted:**
+
+- **Adresse wird durchs Impressum öffentlich**, obwohl beim Domain-Registrar WHOIS-Privacy aktiv ist. Die Privacy-Maßnahme des Registrars wird damit für diesen Use-Case effektiv ausgehebelt. Verstanden und akzeptiert.
+- **Mobilnummer kann Spam-Calls anziehen.** Risiko gering, weil das Impressum nicht die meist-besuchte Seite ist und Bots/Scraper primär die normalen Web-Seiten abgrasen.
+- **Kein zusätzlicher Privacy-Layer** für Anschrift oder Telefon — wer sie nutzen will, kann es.
+
+**Reversibility:**
+
+- Mittel. Wechsel auf c/o oder Service wäre eine reine Impressum-Update-Aktion (HTML/MD-Edit, ein Commit, ein Re-Deploy). Plus: Domain-WHOIS-Daten ggf. aktualisieren.
+- Wer die alte Version schon archiviert hat (Web-Archive, Caches), behält sie. Das ist die Realität öffentlich publizierter Adressen.
+
+**Effects on plan:**
+
+- **Phase 5 (TASK-506)** Impressum-Finalisierung — Inhalt steht jetzt fest. Verwendung des Templates aus `06_legal_compliance.md` §3.2 mit den entschiedenen Werten.
+- **Datenschutzerklärung (TASK-506)** muss konsistent dieselbe Adresse/Mailadresse als Kontakt für DSR-Anfragen nennen.
+- **L1 in Open Questions** aus `06_legal_compliance.md` §8 → resolved.
+
+**Notes:**
+
+- Keine anwaltliche Beratung in Anspruch genommen; bei späterem Unbehagen wäre eine 30-min-Rechtsberatung bei einem Fachanwalt (€100-150) gut investiert.
+- Die finale Impressums-Datei wird erst in Phase 5 platziert (TASK-506). Bis dahin gibt es das Impressum noch nicht öffentlich — das ist okay, weil die Site selbst noch nicht öffentlich erreichbar ist.
+
+---
+
+## DEC-008 — Drei Pilot-Companies für den ersten Scrape (2026-05-13)
+
+**Decision:** Drei initiale Pilot-Companies für den Scraper und die ersten Recruiter-Tokens:
+
+| Company | Domain | Profil |
+|---|---|---|
+| SEW-Eurodrive | sew-eurodrive.de | Industrie-Mittelstand, Antriebstechnik (Bruchsal, DE) |
+| DKFZ | dkfz.de | Öffentliche Forschungseinrichtung, Krebsforschung (Heidelberg, DE) |
+| Exxeta | exxeta.com | Tech-Consulting / IT-Dienstleister (Karlsruhe, DE) |
+
+**Why:**
+
+- **Drei sehr unterschiedliche Profile:** Industrie-Mittelstand, öffentliche Wissenschaft, Tech-Consulting. Maximaler Lern-Effekt beim System-Prompt-Tuning, weil die Vokabular-Welten, Ton-Lagen und Inhaltsstrukturen sich deutlich unterscheiden.
+- **Alle drei sind realistische Wechselziele** für das Karriereprofil. Kein "Lufträume-Scrapen".
+- **Alle drei haben substantielle Web-Auftritte** mit klar identifizierbaren Karriere-Bereichen, Press-Releases und About-Seiten — genug Material für den Bot, um sinnvoll zu antworten.
+- **Geografischer Schwerpunkt DE/Karlsruhe-Heidelberg-Bruchsal** passt zur Wohnortlage.
+
+**Considered:**
+
+- **Agilent Technologies** (aktueller Arbeitgeber) → verworfen wegen optischer und praktischer Probleme: User-Agent des Scrapers würde in Agilent-Server-Logs auftauchen; Verwirrung falls ein Agilent-Recruiter den Link erhält; spannungsreiche Außenwirkung trotz vertraglich erlaubter Side-Projects. Falls Agilent als Test-Case interessant ist (Insider-Wissen ermöglicht Antwort-Verifikation), gehört das in eine Test-Corpus-Fixture (`08_test_strategy.md §3.1`), nicht in den Production-Pilot.
+
+**Trade-offs:**
+
+- **Drei DE-zentrische Firmen** → Recruiter aus internationalen Märkten profitieren weniger vom company-spezifischen Kontext. Akzeptiert, weil Hauptzielgruppe deutschsprachig.
+- **Legal-Review pro Firma steht noch aus.** Jede der drei braucht den `legal_review`-Block in der Config (per `06_legal_compliance.md §5.2`), bevor der Scraper läuft. Erfolgt in Phase 1 vor TASK-107 (Scraper-Run).
+- **Bei DKFZ besondere Aufmerksamkeit** auf Datenschutz: Forschungsbereiche können personenbezogene Patient/Studienteilnehmer-Daten erwähnen (auch wenn aggregiert/anonymisiert publiziert). Die `deny_paths` werden entsprechend konservativ gesetzt.
+
+**Reversibility:**
+
+- Sehr hoch. Hinzufügen weiterer oder Entfernen einer dieser drei ist eine reine Config-Datei-Operation plus Token-Generierung.
+- Keine harten Plan-Abhängigkeiten von genau dieser Auswahl.
+
+**Effects on plan:**
+
+- **L4 in `06_legal_compliance.md §8`** → resolved.
+- **Phase 1 / TASK-107 (Scraper-Run)** hat damit drei konkrete Target-Configs.
+- **Drei Skelett-Configs** in `companies/` werden erstellt (sew-eurodrive.yml, dkfz.yml, exxeta.yml), mit `legal_review`-Platzhaltern und vorläufigen Seed-URLs.
+- Die jeweils realen Legal-Reviews (TOS prüfen, robots.txt-Check, Pfad-Allowlist/Denylist) sind ein "Pre-flight-Check" vor dem ersten Scrape-Lauf.
+
+**Notes:**
+
+- Skelett-Configs sind *vorläufig*. Die `seed_urls` und `allow_paths` werden bei der Legal-Review pro Firma verfeinert. Die `legal_review`-Blocks sind im Skelett mit `TBD` markiert.
+- Bot wird mit allen drei Firmen-Kontexten getestet werden, bevor die Tokens an Recruiter rausgehen.
+
+---
+
+---
+
+## DEC-009 — Output-Filter forbidden patterns (Th2) (2026-05-13)
+
+**Decision:** Output-Filter mit zwei Kategorien aktivieren, streng:
+
+- **Kategorie B — Binding Statements / Acceptance.** Verhindert, dass der Bot Verpflichtungen eingeht (Marcel/ich akzeptiere/zusage/garantier/kündige etc., DE+EN).
+- **Kategorie C — System-Prompt / Internal Leakage.** Verhindert, dass interne Systemstrukturen ausgeplaudert werden (Tool-Namen, Systemprompt-Marker, Config-Schlüsselwörter).
+
+Bei Match: **sofortige Refusal**, keine Maskierung, kein "Reparatur"-Versuch. Antwort wird durch eine generische Default-Refusal ersetzt:
+
+> "Da müsste ich passen — die Antwort wäre an dieser Stelle nicht angemessen. Frag Marcel gerne direkt unter <impressum-mail>."
+
+(Anrede gemäß DEC-006: Du-Default, spiegelt nach Recruiter-Verhalten.)
+
+Plus: Log-Eintrag in der DB (`filter_hit` mit Pattern-ID, Timestamp, Token-Hash — kein Inhalt).
+
+**Verworfen / explizit nicht im Filter:**
+
+- **Kategorie A — Salary / Compensation Commitments.** Vertrauen wird auf Systemprompt-Ground-Rules gesetzt (FR-024). Falls später regelmäßige Durchbrüche, Kategorie A nachrüstbar ohne Architektur-Schaden.
+- **Kategorie D — Sensitive Personal Information.** Corpus soll sauber sein; Filter ist nicht der richtige Ort dafür. Bei Bedarf in Phase 5 als Allowlist nachrüsten.
+- **Pattern "meine Anweisungen lauten" / "my instructions are"** aus Kategorie C entfernt — kann harmlos sein, wenn der Bot über seinen Zweck spricht ("meine Anweisungen lauten, ehrliche Antworten zu geben"). Striktere Marker (Systemprompt, GROUND RULES, Tool-Namen) reichen.
+
+**Konkrete Pattern-Liste** (lebt in `config/forbidden_patterns.txt`, wird in Phase 2 / TASK-205 erstellt):
+
+```regex
+# Kategorie B — Binding Statements
+
+# Deutsch
+\b(?:ich|Marcel)\s+(?:akzeptier|nehme an|sage zu|stimme zu|verpflichte mich|garantier|zusichere)\w*
+\b(?:ich|Marcel)\s+(?:k.ndige|trete bei|fange an|starte am)\b
+
+# Englisch
+\bI\s+(?:accept|agree to|commit to|will sign|guarantee|promise|hereby)\b
+\b(?:Marcel|he|she)\s+(?:accepts|will sign|commits to|guarantees)\b
+
+# Vertragsähnliche Phrasen
+(?:hereby|hiermit)\s+(?:accept|akzeptiere|zusage|confirm|bestätige)
+
+# Kategorie C — Internal Leakage
+
+# Systemprompt-Marker
+(?:System prompt|systemprompt|GROUND RULES|<system>|</system>)
+
+# Persona-Marker
+(?:You are an assistant|Du bist ein Assistent|Du bist Marcels)
+
+# Tool-Namen
+\b(?:search_candidate_(?:semantic|keyword)|search_company_(?:semantic|keyword))\b
+
+# Interne Konfig-Hinweise
+(?:API key|API-Schl.ssel|connection string|environment variable|\.env)
+```
+
+**Why:**
+
+- B+C decken die "Reputations-Killer" und die "Architektur-Leak" ab — die zwei Restrisiken, bei denen ein einzelner Durchbruch peinlich wäre.
+- A (Salary) und D (PII) werden bewusst dem Systemprompt überlassen, weil sie schwieriger zu treffen sind und ein zu strenger Filter False-Positives produzieren würde.
+- Strenge Refusal (statt Maskieren) hält den Filter einfach und deterministisch. Maskieren erfordert Logik, wann genau und wie maskiert wird — komplexer, mehr Bugs.
+- Edge-Case "meine Anweisungen lauten": durchlassen ist die richtige Wahl, weil das eine legitime Phrase sein kann, wenn der Bot seinen Zweck erklärt.
+
+**Considered:**
+
+- Alle vier Kategorien (A+B+C+D) → verworfen wegen False-Positive-Risiko bei großzügiger Salary-Erkennung und PII-Maskierung.
+- Maskieren statt Refusal → verworfen wegen Komplexität; bei diesem Filter-Umfang nicht nötig.
+- Allowlist für Kontaktdaten → auf Phase 5 verschoben, wenn Impressum-Werte final stehen.
+
+**Reversibility:** Sehr hoch. Filter ist eine Textdatei mit Regex pro Zeile. Hinzufügen/Entfernen ist ein Edit + Re-Deploy.
+
+**Effects on plan:**
+
+- **Phase 2 / TASK-205 (System prompt + retrieval template als config)** — der Filter-Code lädt `config/forbidden_patterns.txt` und prüft jede LLM-Antwort vor Ausgabe.
+- **Phase 2 / TASK-402 (Output filter)** — Implementierung dieses Filters. Eine neue Akzeptanzkriterium-Zeile: "Filter lädt Patterns aus Config, Test mit gestelltem Match liefert Refusal, Log-Eintrag erscheint."
+- **Th2 in `04_threat_model.md` §7** → resolved.
+- **Phase 5 / TASK-506** — Allowlist für Kontaktdaten kann hier nachgepflegt werden (Kategorie D in abgespeckter Form).
+
+**Notes:**
+
+- Pattern-Liste ist absichtlich konservativ. Lieber zu wenig matchen als zu viel; jeder Match ist eine Vollblockade.
+- Falls in Phase 1/2 Eval-Daten zeigen, dass Salary-Themen durchrutschen (Recruiter fragt nach Gehalt, Bot nennt Zahl), Kategorie A nachrüsten.
+- Pattern-Datei wird unter Git versioniert; jede Änderung geht durch PR-Review.

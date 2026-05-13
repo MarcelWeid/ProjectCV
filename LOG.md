@@ -210,3 +210,51 @@ Jeder Eintrag wird beim Committen mit der zugehörigen Arbeit zusammen festgehal
 **Risk watch:**
 - R8 (Candidate Corpus) — Tag 5 offen. Empfehlung an mich selbst: morgen unbedingt anfangen, auch wenn nur eine Projektbeschreibung.
 - Sonst keine neuen Risiken.
+
+---
+
+## 2026-05-13 (Mi, Blöcke 6-9 ~85 min) — TASK-010: vier kleine Decisions
+
+**Worked on:** TASK-010 in vier Teilen — alle vier offenen kleinen Decisions geschlossen.
+
+**Done:**
+
+**D5 — Bot-Tonalität, Sprache, Anrede** (DEC-006)
+- Ton: "leicht persönlich, sachlich" (Variante 2 aus dem Vergleich) — Bot spricht über Marcel mit der Wärme eines Kollegen, der ihn gut kennt.
+- Hauptsprache: Deutsch, Englisch nach Recruiter-Eingabe automatisch (FR-011).
+- Anrede: "Du" als Default, wechselt zu "Sie" sobald der Recruiter erstmals siezt — danach einseitig (kein Rückwärts-Wechsel).
+
+**L1 — Impressum-Adresse** (DEC-007)
+- Wohnanschrift, Mobilnummer, E-Mail im Impressum.
+- Alternativen (c/o, Service, nur-E-Mail) bewusst verworfen.
+- Telefonsache nach EuGH-Hinweis (C-298/07) auf Mobilnummer korrigiert.
+- Privacy-Trade-off bewusst akzeptiert: WHOIS-Privacy beim Registrar wird durch öffentliches Impressum effektiv ausgehebelt.
+
+**L4 — Drei Pilot-Companies** (DEC-008)
+- SEW-Eurodrive (Industrie-Mittelstand), DKFZ (öffentliche Forschungseinrichtung), Exxeta (Tech-Consulting).
+- Agilent (aktueller Arbeitgeber) als ursprünglicher dritter Kandidat verworfen — Test-Wert überwiegt nicht die optischen Risiken.
+- Drei Profile maximal unterschiedlich → Vokabular- und Ton-Lagen-Spektrum für späteres Systemprompt-Tuning.
+- Skelett-Configs unter `companies/` mit TBD-Platzhaltern für legal_review.
+
+**Th2 — Output-Filter forbidden patterns** (DEC-009)
+- Schlanker Filter: Kategorien B (Binding Statements) + C (Internal Leakage), streng.
+- Kategorien A (Salary) und D (PII) bewusst weggelassen — Vertrauen auf Systemprompt-Ground-Rules.
+- Match-Verhalten: sofortige Refusal, kein Maskieren, plus Log-Eintrag.
+- Edge-Case "meine Anweisungen lauten" bewusst durchgelassen.
+
+**Stuck on:** —
+
+**Next session:** **PHASE 0 IST KOMPLETT.** Nächster Schritt: Phase 1 (RAG Core, offline). Beginnt mit TASK-101 (Solution-Skeleton).
+
+**Decisions made:** DEC-006, DEC-007, DEC-008, DEC-009.
+
+**Notes:**
+- Geschmacks-Entscheidungen mit konkreten Beispiel-Antworten (D5) greifbar zu machen, hat gut funktioniert.
+- L1: anwaltliche Beratung nicht in Anspruch genommen; bei Bauchschmerzen später nachholbar.
+- L4: Bei DKFZ besondere Aufmerksamkeit auf PII (Patient/Studien-Daten) — strenge deny_paths in der Skelett-Config.
+- Th2: bewusst defensiv. Lieber zu wenig matchen als False-Positives. Nachrüstbar wenn Eval-Daten Lücken zeigen.
+
+**Risk watch:**
+- R8 (Candidate Corpus) — sechs Tage offen. Jetzt der konkrete Blocker für Phase 1, nicht mehr nur eine Empfehlung.
+
+**Phase-0-Status:** ✓ 10 von 10 Tasks erledigt.

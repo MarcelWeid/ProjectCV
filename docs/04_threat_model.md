@@ -80,7 +80,7 @@ The hostile boundary. Every threat here is realistic.
 | ID | STRIDE | Threat | Severity | Likelihood | Risk | Control |
 |---|---|---|---|---|---|---|
 | T-01 | S | Attacker forges a recruiter request with someone else's token, impersonating a real recruiter | Med | Low | Low | Tokens are 256-bit random, opaque, HMAC-stored (SR-014). Brute force is infeasible. Phishing the token from the recruiter is the realistic vector — outside our control. |
-| T-02 | T | Attacker tampers with the request body to inject a different `company_id` than the token implies | High | Med | High | `company_id` is **only** derived server-side from the validated token (§4.2). The request body has no field for it. |
+| Th2 | ~~Output filter forbidden-pattern list~~ **Resolved 2026-05-13 in DEC-009.** Strict B+C filter (binding statements + internal leakage). Salary (A) and PII (D) intentionally left to system prompt / corpus hygiene. Concrete patterns documented; lives in `config/forbidden_patterns.txt`, implemented in TASK-402. | Done | Done |
 | T-03 | T | MITM strips TLS or tampers in flight | High | Low | Med | TLS-only via Caddy (SR-015); HSTS preload prevents downgrade |
 | T-04 | R | Recruiter later claims they never asked X / abuser claims their queries weren't theirs | Low | Med | Low | Logs include hashed token + hashed IP + timestamp (SR-030). Non-repudiation isn't a strong goal here — accepted. |
 | T-05 | I | Cookies, local storage, or query params reveal something we didn't intend | Med | Med | Med | No cookies for the chat itself; token is in URL query string (`?c=`) by design; nothing else stored client-side. SPA never embeds secrets. |

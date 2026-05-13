@@ -478,9 +478,9 @@ Honest list:
 
 | # | Question | Owner | Affects |
 |---|---|---|---|
-| L1 | Impressum address strategy — home, c/o, or paid forwarding service? | You | §3.2 |
+| L1 | ~~Impressum address strategy~~ **Resolved 2026-05-13 in DEC-007.** Wohnanschrift + Mobilnummer + E-Mail. Privacy-Trade-off bewusst akzeptiert (Adresse wird öffentlich trotz aktiver WHOIS-Privacy beim Registrar). | Done | Done |
 | L2 | Mailbox for DSR / contact — new dedicated address, or candidate's existing email? | You | §4.2 §12, OR-003 (Th3 adjacent) |
 | L3 | Privacy notice generation — eRecht24 generator (~€10/mo), Datenschutz-Generator.de (one-off ~€100), or lawyer review (~€300+)? | You | §4 |
-| L4 | The first three pilot companies for phase 1 — names? Each needs its `legal_review` block done before scraping. | You | §5.2 |
+| L4 | ~~The first three pilot companies for phase 1 — names?~~ **Resolved 2026-05-13 in DEC-008.** SEW-Eurodrive, DKFZ, Exxeta. Skelett-Configs in `companies/` erstellt; konkrete `legal_review`-Blocks und Crawl-Pfade folgen pre-flight vor TASK-107. | Done | Done |
 | L5 | Should the privacy notice mention the GitHub repo as part of the openness/transparency story, or treat it as out-of-scope to the privacy notice? | You | §4.2 |
 | L6 | ~~Default on ambiguous robots.txt / ToS?~~ **Resolved 2026-05-12: Conservative default — do not scrape on ambiguity.** If `robots.txt` is unclear, if ToS is silent rather than permissive, if TDM permissions cannot be confirmed, the company is either excluded or scoped to clearly-public paths only (press releases, official "about" page, values page). The reasoning: the project's success metric is recruiter outreach, and a single "you scraped us without permission" reply kills that outcome regardless of whether it would have been legally defensible. The marginal target-set reduction is acceptable. The per-company `legal_review` checklist (§5.2) operationalises this — under `decision`, ambiguity maps to `"proceed with reduced scope"` or `"do not scrape — replace with another company"`, never to unrestricted `"proceed"`. | Done | §5.2 |

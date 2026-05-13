@@ -1,0 +1,48 @@
+company_id: TBD-uuid
+display_name: Deutsches Krebsforschungszentrum
+domain: dkfz.de
+
+seeds:
+  - https://www.dkfz.de/de/index.html                      # Startseite
+  - https://www.dkfz.de/de/karriere/                       # Karriere
+  - https://www.dkfz.de/de/presse-und-information/         # Press
+  - https://www.dkfz.de/de/das-dkfz/                       # About / Mission
+  # Weitere Seeds vor Scrape ergänzen
+
+crawl:
+  same_origin_only: true
+  max_depth: 2
+  max_pages: 50
+  allow_paths:
+    - /de/karriere
+    - /de/presse-und-information
+    - /de/das-dkfz
+  deny_paths:
+    - /en/                           # Nur deutsche Inhalte für deutschen Recruiter-Kontext
+    - /de/forschung/                 # Forschungsdetails: potenziell PII von Studien
+    - /de/patienten-und-angehoerige  # Patient-orientierte Bereiche (PII-Risiko)
+    - /de/intern/                    # Auth-gebunden falls vorhanden
+
+robots:
+  respect: true
+  user_agent: "ProjectCVBot/1.0 (+https://marcel.weidemann.family/cv)"
+
+legal_review:
+  reviewed_at: TBD
+  reviewer: TBD
+  source_classification: TBD         # Forschungseinrichtung — typischerweise "public mission content"
+  robots_txt_checked: false
+  robots_txt_allows_target_paths: TBD
+  tos_url: TBD
+  tos_explicitly_prohibits_scraping: TBD
+  tos_explicitly_prohibits_ai_training: TBD
+  tdm_opt_out_machine_readable: TBD
+  copyright_concerns:
+    level: TBD
+    notes: TBD
+  pii_in_content:
+    level: TBD
+    notes: "DKFZ ist Forschungseinrichtung — besondere Aufmerksamkeit auf Patient/Studien-Daten. Forschungspublikationen können personenbezogene Daten enthalten, auch wenn aggregiert."
+  trademark_concerns:
+    notes: TBD
+  decision: TBD
