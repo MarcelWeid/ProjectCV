@@ -1,0 +1,29 @@
+# Auto-detect text files and normalize line endings to LF in the repo
+* text=auto eol=lf
+
+# Source code
+*.cs text eol=lf
+*.csproj text eol=lf
+*.sln text eol=crlf
+
+# Scripts
+*.sh text eol=lf
+*.ps1 text eol=crlf
+
+# Docs / config
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+
+# GitHub linguist hints — don't count vendored / generated code in language stats
+docs/** linguist-documentation
